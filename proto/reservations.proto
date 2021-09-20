@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+package reservations;
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+
+import "resource.proto";
+
+service Reservations {
+    rpc CreateReservation(ReservationOperationRequest) returns (ReservationOperationResponse);
+    rpc UpdateReservation(ReservationOperationRequest) returns (ReservationOperationResponse);
+    rpc DeleteReservation(DeleteReservationRequest) returns (ReservationOperationResponse);
+    rpc GetReservation(ReservationRequest) returns (ReservationResponse);
+    rpc ListReservation(ListReservationRequest) returns (stream ReservationResponse);
+}
+
+message ReservationRequest {
+    string reservation_id = 1;
+}
+
+message ListReservationRequest {
+    repeated ReservationResource resources = 1;
+    repeated OwnerUser owner_users = 2;
+    repeated OwnerGroup owner_groups = 3;
+}
+
+message DeleteReservationRequest {
+    repeated ReservationRequest reservations = 1;
+}
+
+message ReservationResponse {
+    Reservation reservation = 1;
+    ReservationStatus status = 2;
+    optional string reason = 3;
+}
+
+message ReservationOperationRequest {
+    repeated Reservation reservations = 1;
+}
+
+message ReservationOperationResponse {
+    repeated ReservationResponse reservation_response = 1; 
+}
+
+enum ReservationStatus {
+    GRANTED = 0;
+    REJECTED = 1;
+    DELETED = 2;
+}
+
+enum ReservationRepeat {
+    NONE = 0;
+    DAILY = 1;
+    WEEKLY = 2;
+    MONTHLY = 3;
+}
+
+message OwnerUser {
+    string id = 1;
+    string name = 2;
+}
+
+message OwnerGroup {
+    string id = 1;
+    string name = 2;
+}
+
+message ReservationResource {
+    string id = 1;
+    string name = 2;
+    ResourceType type = 3;
+    repeated Unit units = 5;
+}
+
+message Reservation {
+    optional string id = 1;
+    repeated ReservationResource resources = 2;
+    google.protobuf.Timestamp start_time = 3;
+    google.protobuf.Duration duration = 4;
+    ReservationRepeat repeat = 5;
+    oneof owner {
+        OwnerUser user = 6;
+        OwnerGroup group = 7;
+    }
+}
