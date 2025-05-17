@@ -1,10 +1,22 @@
 use std::env;
-use std::path::PathBuf;
 
 fn main() {
-    let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
+    let include_path = if let Ok(path) = env::var("PROTOC_INCLUDE") {
+        path
+    } else if cfg!(target_os = "macos") {
+        if cfg!(target_arch = "aarch64") {
+            "/opt/homebrew/include".to_string()
+        } else {
+            "/usr/local/include".to_string()
+        }
+    } else {
+        "/usr/include".to_string()
+    };
+
     tonic_build::configure()
-        .file_descriptor_set_path(out_dir.join("reservations_descriptor.bin"))
-        .compile(&["proto/reservations.proto"], &["proto"])
-        .unwrap();
+        .compile(
+            &["proto/reservations.proto"],
+            &[include_path.as_str(), "proto"],
+        )
+        .expect("Failed to compile proto files");
 }

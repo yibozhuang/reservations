@@ -2,85 +2,85 @@ syntax = "proto3";
 
 package reservations;
 
-import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
 
-import "resource.proto";
+service ReservationService {
+  // List available time slots within a date range
+  rpc ListAvailableSlots(TimeRange) returns (SlotList);
+  
+  // Create a new reservation
+  rpc CreateReservation(ReservationRequest) returns (Reservation);
+  
+  // Get a specific reservation by ID
+  rpc GetReservation(ReservationId) returns (Reservation);
+  
+  // Cancel an existing reservation
+  rpc CancelReservation(ReservationId) returns (google.protobuf.Empty);
+  
+  // List all reservations for a client
+  rpc ListClientReservations(ClientId) returns (ReservationList);
 
-service Reservations {
-    rpc CreateReservation(ReservationOperationRequest) returns (ReservationOperationResponse);
-    rpc UpdateReservation(ReservationOperationRequest) returns (ReservationOperationResponse);
-    rpc DeleteReservation(DeleteReservationRequest) returns (ReservationOperationResponse);
-    rpc GetReservation(ReservationRequest) returns (ReservationResponse);
-    rpc ListReservation(ListReservationRequest) returns (stream ReservationResponse);
+  // Create a new client
+  rpc CreateClient(ClientRequest) returns (Client);
+
+  // List all clients
+  rpc ListClients(google.protobuf.Empty) returns (ClientList);
+}
+
+message TimeRange {
+  google.protobuf.Timestamp start_time = 1;
+  google.protobuf.Timestamp end_time = 2;
+}
+
+message TimeSlot {
+  google.protobuf.Timestamp start_time = 1;
+  google.protobuf.Timestamp end_time = 2;
+}
+
+message SlotList {
+  repeated TimeSlot slots = 1;
 }
 
 message ReservationRequest {
-    string reservation_id = 1;
+  string client_id = 1;
+  TimeSlot slot = 2;
+  string notes = 3;
 }
 
-message ListReservationRequest {
-    repeated ReservationResource resources = 1;
-    repeated OwnerUser owner_users = 2;
-    repeated OwnerGroup owner_groups = 3;
+message ReservationId {
+  string id = 1;
 }
 
-message DeleteReservationRequest {
-    repeated ReservationRequest reservations = 1;
+message ClientId {
+  string id = 1;
 }
 
-message ReservationResponse {
-    Reservation reservation = 1;
-    ReservationStatus status = 2;
-    optional string reason = 3;
+message ClientRequest {
+  string name = 1;
+  string email = 2;
 }
 
-message ReservationOperationRequest {
-    repeated Reservation reservations = 1;
+message Client {
+  string id = 1;
+  string name = 2;
+  string email = 3;
+  google.protobuf.Timestamp created_at = 4;
 }
 
-message ReservationOperationResponse {
-    repeated ReservationResponse reservation_response = 1; 
-}
-
-enum ReservationStatus {
-    GRANTED = 0;
-    REJECTED = 1;
-    DELETED = 2;
-}
-
-enum ReservationRepeat {
-    NONE = 0;
-    DAILY = 1;
-    WEEKLY = 2;
-    MONTHLY = 3;
-}
-
-message OwnerUser {
-    string id = 1;
-    string name = 2;
-}
-
-message OwnerGroup {
-    string id = 1;
-    string name = 2;
-}
-
-message ReservationResource {
-    string id = 1;
-    string name = 2;
-    ResourceType type = 3;
-    repeated Unit units = 5;
+message ClientList {
+  repeated Client clients = 1;
 }
 
 message Reservation {
-    optional string id = 1;
-    repeated ReservationResource resources = 2;
-    google.protobuf.Timestamp start_time = 3;
-    google.protobuf.Duration duration = 4;
-    ReservationRepeat repeat = 5;
-    oneof owner {
-        OwnerUser user = 6;
-        OwnerGroup group = 7;
-    }
+  string id = 1;
+  string client_id = 2;
+  TimeSlot slot = 3;
+  google.protobuf.Timestamp created_at = 4; 
+  string status = 5; // "confirmed", "cancelled"
+  string notes = 6;
+}
+
+message ReservationList {
+  repeated Reservation reservations = 1;
 }

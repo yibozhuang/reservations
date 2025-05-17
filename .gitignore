@@ -1,2 +1,5 @@
+.vscode/
+*.swp
+.env
 /target
 Cargo.lock

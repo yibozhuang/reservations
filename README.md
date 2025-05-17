@@ -1,8 +1,27 @@
 # Reservations
 
-A generic service for handling reservations on arbitrary units of resource.
+A service for handling time-slot based reservations.
 
-Current tech-stack:
+Tech-stack:
 - Rust for development
 - gRPC for service APIs
-- MongoDB for backend data store
+- Postgres for data store
+
+## Building
+```
+$ cargo build
+```
+
+## Running Locally
+
+1. Copy `.env.example` to `.env` and properly configure database connection
+
+2. Run with Docker
+```
+$ docker-compose up --build
+```
+
+3. Test with example client
+```
+$ cargo run --example client
+```
